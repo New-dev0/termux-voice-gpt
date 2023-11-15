@@ -5,9 +5,7 @@ import requests, time, json, os, sys
 def get_tools_from_config(cfg: dict):
     from langchain.agents import load_tools
     from PluginLoader import PluginLoader # PluginLoader.py
-    tools = []
-    for url in cfg['openai']:
-        tools.append(PluginLoader(url).get_tool())
+    tools = [PluginLoader(url).get_tool() for url in cfg['openai']]
     if (l_tools := cfg['langchain']):
         tools += load_tools(l_tools)
     return tools
@@ -27,7 +25,14 @@ def chat(args):
         get_voice = lambda: sh('termux-speech-to-text').strip()
         say_voice = lambda text: sh(f'termux-tts-speak "{text}"')
         if args.vv:
-            bot.set_callback('on_tool_start', (lambda tool, argument, **kwargs: say_voice(f'Running {tool["name"]}') if not tool['name'] in ['PlanTool'] else None))
+            bot.set_callback(
+                'on_tool_start',
+                lambda tool, argument, **kwargs: say_voice(
+                    f'Running {tool["name"]}'
+                )
+                if tool['name'] not in ['PlanTool']
+                else None,
+            )
         while True:
             say_voice("Listening!")
             print('You: ', end='')
