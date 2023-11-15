@@ -56,11 +56,10 @@ class PluginLoader(object):
     def _get_api_base(self, plugin: AIPluginTool, url: str):
         specs = OpenAPISpec.from_url(plugin.plugin.api.url)
         server = specs.servers[0].url
-        if server == '/':
-            _ = urlparse(url)
-            return f'{_.scheme}://{_.netloc}/'
-        else:
+        if server != '/':
             return server
+        _ = urlparse(url)
+        return f'{_.scheme}://{_.netloc}/'
 
     def build(self, request: str) -> str:
         resp = self.llm.call_as_llm(self.prompt.replace('{request}', request))
@@ -82,13 +81,3 @@ class PluginLoader(object):
             "Returns a string containing the type of request to preform, along with the URL, and (if it's a POST request) the json data to send. The result of this tool should be used with a request type tool."
         )
         return tool
-        return Tool(
-            name='Get Request Params',
-            func=self.build,
-            description=(
-                f"Gets request parameters for interacting with {self.plugin.plugin.name_for_human} / {self.plugin.name}."
-                f"Useful for {self.plugin.plugin.description_for_human}"
-                "Accepts one argument, which should be the purpose of the request in natural language (e.g., `get products with 'shampoo' in the name`)."
-                "Returns a string containing the type of request to preform, along with the URL, and (if it's a POST request) the json data to send. The result of this tool should be used with a request type tool."
-            )
-        )

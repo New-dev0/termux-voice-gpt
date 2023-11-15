@@ -235,7 +235,7 @@ class TorchTool(BaseRemoteTool, BaseTool):
     )
 
     def _run(self, state: str):
-        if not state in ('on', 'off'):
+        if state not in {'on', 'off'}:
             return 'Error: argument must be "on" or "off"'
         return self._send_cmd(f'termux-torch {state}')
 
@@ -286,7 +286,7 @@ class SetVolumeTool(BaseRemoteTool, BaseTool):
                 args = json.loads(arguments)
             except json.JSONDecodeError:
                 return {'error': 'Invalid JSON'}
-        if not args['volume_type'] in ('music', 'alarm', 'notification', 'ring'):
+        if args['volume_type'] not in ('music', 'alarm', 'notification', 'ring'):
             return 'Error: type must be "music", "alarm", "notification", or "ring"'
         return self._send_cmd(f'termux-volume {args["volume_type"]} {args["value"]}')
 
@@ -349,8 +349,7 @@ class SearchContactsTool(BaseRemoteTool, BaseTool):
     def _run(self, search: str):
         res = self._send_cmd('termux-contact-list')
         contacts = json.loads(res['output'])
-        matches = [c for c in contacts if search.lower() in c['name'].lower()]
-        return matches
+        return [c for c in contacts if search.lower() in c['name'].lower()]
     async def _arun(self, *args):
         return self._run(*args)
 
@@ -371,7 +370,15 @@ class ListSMSTool(BaseRemoteTool, BaseTool):
                 args = json.loads(arguments)
             except json.JSONDecodeError:
                 return {'error': 'Invalid JSON'}
-        if not args['box'] in ('inbox', 'sent', 'draft', 'outbox', 'failed', 'queued', 'all'):
+        if args['box'] not in (
+            'inbox',
+            'sent',
+            'draft',
+            'outbox',
+            'failed',
+            'queued',
+            'all',
+        ):
             return 'Error: box must be "inbox", "sent", "draft", "outbox", "failed", "queued", or "all"'
         return self._send_cmd(f'termux-sms-list -t {args["box"]} -l {args["limit"]}')
 
